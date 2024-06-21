@@ -1,0 +1,82 @@
+using System;
+public class BankAccount
+{
+    public int AccountNumber { get; }
+    private decimal _balance;
+
+    public BankAccount(int accountNumber, decimal initialBalance = 0)
+    {
+        AccountNumber = accountNumber;
+        _balance = initialBalance;
+        Logger.Instance.Log($"Рахунок {AccountNumber} створено. Баланс: {_balance:C}");
+    }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Сума поповнення повинна бути більшою за нуль.");
+        }
+
+        _balance += amount;
+        Logger.Instance.Log($"Рахунок {AccountNumber}: Поповнення на {amount:C}. Баланс: {_balance:C}");
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Сума зняття повинна бути більшою за нуль.");
+        }
+
+        if (amount > _balance)
+        {
+            throw new InvalidOperationException($"Недостатньо коштів на рахунку {AccountNumber}.");
+        }
+
+        _balance -= amount;
+        Logger.Instance.Log($"Рахунок {AccountNumber}: Зняття {amount:C}. Баланс: {_balance:C}");
+    }
+}
+
+public class Logger
+{
+    private Logger() { }
+
+    private static Logger _instance;
+
+    public static Logger Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new Logger();
+            }
+            return _instance;
+        }
+    }
+
+    public void Log(string message)
+    {
+        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        BankAccount account = new BankAccount(12345, 1000);
+        account.Deposit(500);
+
+        try
+        {
+            account.Withdraw(2000);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+    }
+}
